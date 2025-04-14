@@ -1,0 +1,130 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Region {
+  id      String @id @default(uuid())
+  name_uz String
+  name_ru String
+  name_en String
+  User    User[]
+}
+
+model User {
+  id       String      @id @default(uuid())
+  fullname String
+  password String
+  phone    String      @unique
+  IIN      String      @default("")
+  MFO      String      @default("")
+  RS       String      @default("")
+  BANK     String      @default("")
+  OKED     String      @default("")
+  address  String      @default("")
+  role     ROLE        @default(USER_FIZ)
+  status   USER_STATUS @default(INACTIVE)
+  regionId String
+  region   Region      @relation(fields: [regionId], references: [id])
+  Session  Session[]
+}
+
+model Session {
+  id          String @id @default(uuid())
+  device_name String
+  ip          String
+  userId      String
+  user        User   @relation(fields: [userId], references: [id])
+}
+
+model Level {
+  id      String @id @default(uuid())
+  name_uz String
+  name_ru String
+  name_en String
+}
+
+model Brand {
+  id      String @id @default(uuid())
+  name_uz String
+  name_ru String
+  name_en String
+}
+
+model Capasity {
+  id      String @id @default(uuid())
+  name_uz String
+  name_ru String
+  name_en String
+}
+
+model Size {
+  id      String @id @default(uuid())
+  name_uz String
+  name_ru String
+  name_en String
+}
+
+model FAQ {
+  id          String @id @default(uuid())
+  question_uz String
+  question_ru String
+  question_en String
+  answer_uz   String
+  answer_ru   String
+  answer_en   String
+}
+
+model Contact_Us {
+  id        String @id @default(uuid())
+  firstname String
+  lastname  String
+  phone     String
+  address   String
+  message   String
+}
+
+model About_Us {
+  id                 String @id @default(uuid())
+  generalInformation String
+  email              String
+  link               String
+  phone              String
+}
+
+model Partners {
+  id      String @id @default(uuid())
+  name_uz String
+  name_ru String
+  name_en String
+  image   String
+}
+
+model ShowCase {
+  id             String @id @default(uuid())
+  name_uz        String
+  name_ru        String
+  name_en        String
+  description_uz String
+  description_ru String
+  description_en String
+  image          String
+  link           String
+}
+
+enum ROLE {
+  USER_FIZ
+  USER_YUR
+  ADMIN
+  SUPER_ADMIN
+  VIEWER_ADMIN
+}
+
+enum USER_STATUS {
+  ACTIVE
+  INACTIVE
+}
