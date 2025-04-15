@@ -1,26 +1,73 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateContactUsDto } from './dto/create-contact_us.dto';
 import { UpdateContactUsDto } from './dto/update-contact_us.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ContactUsService {
-  create(createContactUsDto: CreateContactUsDto) {
-    return 'This action adds a new contactUs';
+  constructor(private readonly prisma: PrismaService) { }
+
+  async create(createContactUsDto: CreateContactUsDto) {
+    try {
+      let created = await this.prisma.contact_Us.create({ data: createContactUsDto })
+      return created
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
   }
 
-  findAll() {
-    return `This action returns all contactUs`;
+  async findAll(page = 1, limit = 10, search = '') {
+    try {
+      const pageNumber = Number(page)
+      const limitNumber = Number(limit)
+      let findAll = await this.prisma.contact_Us.findMany({
+        where: {
+          firstname: {
+            startsWith: search,
+            mode: "insensitive"
+          },
+          lastname: {
+            startsWith: search,
+            mode: "insensitive"
+          }
+        },
+        skip: (pageNumber - 1) * limitNumber,
+        take: limitNumber
+      })
+      return findAll
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} contactUs`;
+  async findOne(id: string) {
+    try {
+      let findOne = await this.prisma.contact_Us.findUnique({ where: { id } })
+      if (!findOne) return new NotFoundException("Not found")
+      return findOne
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
   }
 
-  update(id: number, updateContactUsDto: UpdateContactUsDto) {
-    return `This action updates a #${id} contactUs`;
+  async update(id: string, updateontactUsDto: UpdateContactUsDto) {
+    try {
+      let updated = await this.prisma.contact_Us.update({
+        data: updateontactUsDto,
+        where: { id }
+      })
+      return updated
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} contactUs`;
+  async remove(id: string) {
+    try {
+      let deleted = await this.prisma.contact_Us.delete({ where: { id } })
+      return deleted
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
   }
 }

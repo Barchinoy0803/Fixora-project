@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { ContactUsService } from './contact_us.service';
 import { CreateContactUsDto } from './dto/create-contact_us.dto';
 import { UpdateContactUsDto } from './dto/update-contact_us.dto';
@@ -13,22 +13,25 @@ export class ContactUsController {
   }
 
   @Get()
-  findAll() {
-    return this.contactUsService.findAll();
+  findAll(@Query() query: { page?: number, limit?: number, search?: string }) {
+    const page = Number(query.page) || 1
+    const limit = Number(query.limit) || 10
+    const search = query.search || ''
+    return this.contactUsService.findAll(page, limit, search);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.contactUsService.findOne(+id);
+    return this.contactUsService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateContactUsDto: UpdateContactUsDto) {
-    return this.contactUsService.update(+id, updateContactUsDto);
+    return this.contactUsService.update(id, updateContactUsDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.contactUsService.remove(+id);
+    return this.contactUsService.remove(id);
   }
 }

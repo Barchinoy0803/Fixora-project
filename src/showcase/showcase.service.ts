@@ -1,26 +1,77 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateShowcaseDto } from './dto/create-showcase.dto';
 import { UpdateShowcaseDto } from './dto/update-showcase.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ShowcaseService {
-  create(createShowcaseDto: CreateShowcaseDto) {
-    return 'This action adds a new showcase';
+  constructor(private readonly prisma: PrismaService) { }
+
+  async create(createShowcaseDto: CreateShowcaseDto) {
+    try {
+      let created = await this.prisma.showCase.create({ data: createShowcaseDto })
+      return created
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
   }
 
-  findAll() {
-    return `This action returns all showcase`;
+  async findAll(page = 1, limit = 10, search = '') {
+    try {
+      const pageNumber = Number(page)
+      const limitNumber = Number(limit)
+      let findAll = await this.prisma.showCase.findMany({
+        where: {
+          name_en: {
+            startsWith: search,
+            mode: "insensitive"
+          },
+          name_ru: {
+            startsWith: search,
+            mode: "insensitive"
+          },
+          name_uz: {
+            startsWith: search,
+            mode: "insensitive"
+          }
+        },
+        skip: (pageNumber - 1) * limitNumber,
+        take: limitNumber
+      })
+      return findAll
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} showcase`;
+  async findOne(id: string) {
+    try {
+      let findOne = await this.prisma.showCase.findUnique({ where: { id } })
+      if (!findOne) return new NotFoundException("Not found")
+      return findOne
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
   }
 
-  update(id: number, updateShowcaseDto: UpdateShowcaseDto) {
-    return `This action updates a #${id} showcase`;
+  async update(id: string, updateShowcaseDto: UpdateShowcaseDto) {
+    try {
+      let updated = await this.prisma.showCase.update({
+        data: updateShowcaseDto,
+        where: { id }
+      })
+      return updated
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} showcase`;
+  async remove(id: string) {
+    try {
+      let deleted = await this.prisma.showCase.delete({ where: { id } })
+      return deleted
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
   }
 }

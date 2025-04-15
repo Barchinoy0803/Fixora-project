@@ -1,26 +1,77 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateCapasityDto } from './dto/create-capasity.dto';
 import { UpdateCapasityDto } from './dto/update-capasity.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class CapasityService {
-  create(createCapasityDto: CreateCapasityDto) {
-    return 'This action adds a new capasity';
+  constructor(private readonly prisma: PrismaService) { }
+
+  async create(createCapasityDto: CreateCapasityDto) {
+    try {
+      let created = await this.prisma.capasity.create({ data: createCapasityDto })
+      return created
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
   }
 
-  findAll() {
-    return `This action returns all capasity`;
+  async findAll(page = 1, limit = 10, search = '') {
+    try {
+      const pageNumber = Number(page)
+      const limitNumber = Number(limit)
+      let capasities = await this.prisma.capasity.findMany({
+        where: {
+          name_en: {
+            startsWith: search,
+            mode: "insensitive"
+          },
+          name_ru: {
+            startsWith: search,
+            mode: "insensitive"
+          },
+          name_uz: {
+            startsWith: search,
+            mode: "insensitive"
+          }
+        },
+        skip: (pageNumber - 1) * limitNumber,
+        take: limitNumber
+      })
+      return capasities
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} capasity`;
+  async findOne(id: string) {
+    try {
+      let capasity = await this.prisma.capasity.findUnique({ where: { id } })
+      if (!capasity) return new NotFoundException("Not found")
+      return capasity
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
   }
 
-  update(id: number, updateCapasityDto: UpdateCapasityDto) {
-    return `This action updates a #${id} capasity`;
+  async update(id: string, updateCapasityDto: UpdateCapasityDto) {
+    try {
+      let updated = await this.prisma.capasity.update({
+        data: updateCapasityDto,
+        where: { id }
+      })
+      return updated
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} capasity`;
+  async remove(id: string) {
+    try {
+      let deleted = await this.prisma.capasity.delete({ where: { id } })
+      return deleted
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
   }
 }

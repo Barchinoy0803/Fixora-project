@@ -31,6 +31,8 @@ model User {
   regionId String
   region   Region      @relation(fields: [regionId], references: [id])
   Session  Session[]
+  Order    Order[]
+  Basket   Basket[]
 }
 
 model Session {
@@ -42,10 +44,157 @@ model Session {
 }
 
 model Level {
-  id      String @id @default(uuid())
-  name_uz String
-  name_ru String
-  name_en String
+  id               String             @id @default(uuid())
+  name_uz          String
+  name_ru          String
+  name_en          String
+  MasterProfession MasterProfession[]
+  ProfessionLevel  ProfessionLevel[]
+  OrderProduct     OrderProduct[]
+  Basket           Basket[]
+}
+
+model Profession {
+  id               String             @id @default(uuid())
+  name_uz          String
+  name_ru          String
+  name_en          String
+  image            String
+  isActive         Boolean            @default(false)
+  MasterProfession MasterProfession[]
+  ProfessionLevel  ProfessionLevel[]
+  ProfessionTool   ProfessionTool[]
+  OrderProduct     OrderProduct[]
+  Basket           Basket[]
+}
+
+model Master {
+  id               String             @id @default(uuid())
+  firstname        String
+  lastname         String
+  phoneNumber      String
+  isActive         Boolean            @default(false)
+  year             Int
+  image            String
+  pasportImage     String
+  about            String
+  MasterProfession MasterProfession[]
+  orderMaster      OrderMaster[]
+}
+
+model MasterProfession {
+  id              String     @id @default(uuid())
+  professionId    String
+  profession      Profession @relation(fields: [professionId], references: [id])
+  minWorkingHours Int
+  levelId         String
+  level           Level      @relation(fields: [levelId], references: [id])
+  priceHourly     Decimal
+  priceDaily      Decimal
+  experience      Int
+  masterId        String
+  master          Master     @relation(fields: [masterId], references: [id])
+}
+
+model ProfessionLevel {
+  id              String     @id @default(uuid())
+  professionId    String
+  profession      Profession @relation(fields: [professionId], references: [id])
+  levelId         String
+  level           Level      @relation(fields: [levelId], references: [id])
+  minWorkingHours Int
+  priceHourly     Decimal
+  priceDaily      Decimal
+}
+
+model Tool {
+  id             String           @id @default(uuid())
+  name_uz        String
+  name_ru        String
+  name_en        String
+  description_uz String
+  description_ru String
+  description_en String
+  price          Decimal
+  quantity       Int
+  code           Int
+  image          String
+  isAvailable    Boolean          @default(false)
+  brandId        String
+  brand          Brand            @relation(fields: [brandId], references: [id])
+  capasityId     String
+  capasity       Capasity         @relation(fields: [capasityId], references: [id])
+  sizeId         String
+  size           Size             @relation(fields: [sizeId], references: [id])
+  ProfessionTool ProfessionTool[]
+  OrderProduct   OrderProduct[]
+  Basket         Basket[]
+}
+
+model ProfessionTool {
+  id           String     @id @default(uuid())
+  professionId String
+  profession   Profession @relation(fields: [professionId], references: [id])
+  toolId       String
+  tool         Tool       @relation(fields: [toolId], references: [id])
+}
+
+model Order {
+  id              String         @id @default(uuid())
+  userId          String
+  user            User           @relation(fields: [userId], references: [id])
+  address         String
+  longitude       String
+  date            DateTime
+  totalPrice      Decimal
+  paymentType     PAYMENT_TYPE
+  withDelivery    Boolean
+  status          ORDER_STATUS
+  deliveryComment String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  orderMaster     OrderMaster[]
+  OrderProduct    OrderProduct[]
+}
+
+model OrderMaster {
+  id       String @id @default(uuid())
+  orderId  String
+  order    Order  @relation(fields: [orderId], references: [id])
+  masterId String
+  master   Master @relation(fields: [masterId], references: [id])
+}
+
+model OrderProduct {
+  id           String     @id @default(uuid())
+  orderId      String
+  order        Order      @relation(fields: [orderId], references: [id])
+  professionId String
+  profession   Profession @relation(fields: [professionId], references: [id])
+  toolId       String
+  tool         Tool       @relation(fields: [toolId], references: [id])
+  levelId      String
+  level        Level      @relation(fields: [levelId], references: [id])
+  timeUnit     TIME_UNIT
+  workingTime  Int
+  price        Decimal
+  count        Int
+}
+
+model Basket {
+  id           String     @id @default(uuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  professionId String
+  profession   Profession @relation(fields: [professionId], references: [id])
+  toolId       String
+  tool         Tool       @relation(fields: [toolId], references: [id])
+  count        Int
+  timeUnit     TIME_UNIT
+  workingTime  Int
+  totalPrice   Decimal
+  levelId      String
+  level        Level      @relation(fields: [levelId], references: [id])
 }
 
 model Brand {
@@ -53,6 +202,7 @@ model Brand {
   name_uz String
   name_ru String
   name_en String
+  Tool    Tool[]
 }
 
 model Capasity {
@@ -60,6 +210,7 @@ model Capasity {
   name_uz String
   name_ru String
   name_en String
+  Tool    Tool[]
 }
 
 model Size {
@@ -67,6 +218,7 @@ model Size {
   name_uz String
   name_ru String
   name_en String
+  Tool    Tool[]
 }
 
 model FAQ {
@@ -89,11 +241,13 @@ model Contact_Us {
 }
 
 model About_Us {
-  id                 String @id @default(uuid())
-  generalInformation String
-  email              String
-  link               String
-  phone              String
+  id                    String @id @default(uuid())
+  generalInformation_uz String
+  generalInformation_ru String
+  generalInformation_en String
+  email                 String
+  link                  String
+  phone                 String
 }
 
 model Partners {
@@ -127,4 +281,19 @@ enum ROLE {
 enum USER_STATUS {
   ACTIVE
   INACTIVE
+}
+
+enum PAYMENT_TYPE {
+  PAYME
+  CASH
+}
+
+enum ORDER_STATUS {
+  CANCELLED
+  COMPLETEED
+}
+
+enum TIME_UNIT {
+  HOUR
+  DAY
 }

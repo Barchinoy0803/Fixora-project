@@ -1,26 +1,78 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateSizeDto } from './dto/create-size.dto';
 import { UpdateSizeDto } from './dto/update-size.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class SizeService {
-  create(createSizeDto: CreateSizeDto) {
-    return 'This action adds a new size';
+  constructor(private readonly prisma: PrismaService) { }
+
+  async create(createSizeDto: CreateSizeDto) {
+    try {
+      let created = await this.prisma.size.create({ data: createSizeDto })
+      return created
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
   }
 
-  findAll() {
-    return `This action returns all size`;
+  async findAll(page = 1, limit = 10, search = '') {
+    try {
+      const pageNumber = Number(page)
+      const limitNumber = Number(limit)
+
+      let sizes = await this.prisma.size.findMany({
+        where: {
+          name_en: {
+            startsWith: search,
+            mode: "insensitive"
+          },
+          name_ru: {
+            startsWith: search,
+            mode: "insensitive"
+          },
+          name_uz: {
+            startsWith: search,
+            mode: "insensitive"
+          }
+        },
+        skip: (pageNumber - 1) * limitNumber,
+        take: limitNumber
+      })
+      return sizes
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} size`;
+  async findOne(id: string) {
+    try {
+      let size = await this.prisma.size.findUnique({ where: { id } })
+      if (!size) return new NotFoundException("Not found")
+      return size
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
   }
 
-  update(id: number, updateSizeDto: UpdateSizeDto) {
-    return `This action updates a #${id} size`;
+  async update(id: string, updateSizeDto: UpdateSizeDto) {
+    try {
+      let updated = await this.prisma.size.update({
+        data: updateSizeDto,
+        where: { id }
+      })
+      return updated
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} size`;
+  async remove(id: string) {
+    try {
+      let deleted = await this.prisma.size.delete({ where: { id } })
+      return deleted
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
   }
 }

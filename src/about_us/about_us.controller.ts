@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { AboutUsService } from './about_us.service';
 import { CreateAboutUsDto } from './dto/create-about_us.dto';
 import { UpdateAboutUsDto } from './dto/update-about_us.dto';
@@ -13,22 +13,25 @@ export class AboutUsController {
   }
 
   @Get()
-  findAll() {
-    return this.aboutUsService.findAll();
+  findAll(@Query() query: { page?: number, limit?: number, search?: string }) {
+    const page = Number(query.page) || 1
+    const limit = Number(query.limit) || 10
+    const search = query.search || ''
+    return this.aboutUsService.findAll(page, limit, search);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.aboutUsService.findOne(+id);
+    return this.aboutUsService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateAboutUsDto: UpdateAboutUsDto) {
-    return this.aboutUsService.update(+id, updateAboutUsDto);
+    return this.aboutUsService.update(id, updateAboutUsDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.aboutUsService.remove(+id);
+    return this.aboutUsService.remove(id);
   }
 }
