@@ -120,12 +120,12 @@ model Tool {
   code           Int
   image          String
   isAvailable    Boolean          @default(false)
-  brandId        String
-  brand          Brand            @relation(fields: [brandId], references: [id])
-  capasityId     String
-  capasity       Capasity         @relation(fields: [capasityId], references: [id])
-  sizeId         String
-  size           Size             @relation(fields: [sizeId], references: [id])
+  brandId        String?
+  brand          Brand?           @relation(fields: [brandId], references: [id])
+  capasityId     String?
+  capasity       Capasity?        @relation(fields: [capasityId], references: [id])
+  sizeId         String?
+  size           Size?            @relation(fields: [sizeId], references: [id])
   ProfessionTool ProfessionTool[]
   OrderProduct   OrderProduct[]
   Basket         Basket[]
@@ -145,7 +145,8 @@ model Order {
   user            User           @relation(fields: [userId], references: [id])
   address         String
   longitude       String
-  date            DateTime
+  latitude        String
+  date            DateTime       @default(now())
   totalPrice      Decimal
   paymentType     PAYMENT_TYPE
   withDelivery    Boolean
@@ -289,6 +290,8 @@ enum PAYMENT_TYPE {
 }
 
 enum ORDER_STATUS {
+  PENDING
+  ACTIVE
   CANCELLED
   COMPLETEED
 }

@@ -1,17 +1,18 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { CreateCapasityDto } from './dto/create-capasity.dto';
-import { UpdateCapasityDto } from './dto/update-capasity.dto';
+import { CreateToolDto } from './dto/create-tool.dto';
+import { UpdateToolDto } from './dto/update-tool.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
-export class CapasityService {
+export class ToolService {
   constructor(private readonly prisma: PrismaService) { }
 
-  async create(createCapasityDto: CreateCapasityDto) {
+  async create(createToolDto: CreateToolDto) {
     try {
-      let created = await this.prisma.capasity.create({ data: createCapasityDto })
-      return created
+      let tool = await this.prisma.tool.create({ data: createToolDto })
+      return tool
     } catch (error) {
+      console.log(error);
       throw new InternalServerErrorException(error)
     }
   }
@@ -20,20 +21,19 @@ export class CapasityService {
     try {
       const pageNumber = Number(page)
       const limitNumber = Number(limit)
-      console.log(search);
-      
-      let capasities = await this.prisma.capasity.findMany({
+
+      let tools = await this.prisma.tool.findMany({
         where: {
-         OR: [
-          { name_en: { startsWith: search, mode: "insensitive" } },
-          { name_ru: { startsWith: search, mode: "insensitive" } },
-          { name_uz: { startsWith: search, mode: "insensitive" } },
-         ]
+          OR: [
+            { name_en: { startsWith: search } },
+            { name_ru: { startsWith: search } },
+            { name_ru: { startsWith: search } },
+          ]
         },
         skip: (pageNumber - 1) * limitNumber,
         take: limitNumber
       })
-      return capasities
+      return tools
     } catch (error) {
       throw new InternalServerErrorException(error)
     }
@@ -41,18 +41,18 @@ export class CapasityService {
 
   async findOne(id: string) {
     try {
-      let capasity = await this.prisma.capasity.findUnique({ where: { id } })
-      if (!capasity) return new NotFoundException("Not found")
-      return capasity
+      let tool = await this.prisma.tool.findUnique({ where: { id } })
+      if (!tool) return new NotFoundException("Not found")
+      return tool
     } catch (error) {
       throw new InternalServerErrorException(error)
     }
   }
 
-  async update(id: string, updateCapasityDto: UpdateCapasityDto) {
+  async update(id: string, updateToolDto: UpdateToolDto) {
     try {
-      let updated = await this.prisma.capasity.update({
-        data: updateCapasityDto,
+      let updated = await this.prisma.tool.update({
+        data: updateToolDto,
         where: { id }
       })
       return updated
@@ -63,7 +63,7 @@ export class CapasityService {
 
   async remove(id: string) {
     try {
-      let deleted = await this.prisma.capasity.delete({ where: { id } })
+      let deleted = await this.prisma.tool.delete({ where: { id } })
       return deleted
     } catch (error) {
       throw new InternalServerErrorException(error)

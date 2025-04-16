@@ -1,16 +1,16 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { CreateAboutUsDto } from './dto/create-about_us.dto';
-import { UpdateAboutUsDto } from './dto/update-about_us.dto';
+import { CreateMasterDto } from './dto/create-master.dto';
+import { UpdateMasterDto } from './dto/update-master.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
-export class AboutUsService {
+export class MasterService {
   constructor(private readonly prisma: PrismaService) { }
 
-  async create(createAboutUsDto: CreateAboutUsDto) {
+  async create(createMasterDto: CreateMasterDto) {
     try {
-      let created = await this.prisma.about_Us.create({ data: createAboutUsDto })
-      return created
+      let master = await this.prisma.master.create({ data: createMasterDto })
+      return master
     } catch (error) {
       throw new InternalServerErrorException(error)
     }
@@ -21,33 +21,34 @@ export class AboutUsService {
       const pageNumber = Number(page)
       const limitNumber = Number(limit)
 
-      let findAll = await this.prisma.about_Us.findMany({
+      let masters = await this.prisma.master.findMany({
+        include: { MasterProfession: true, orderMaster: true },
+        skip: (pageNumber - 1) * limitNumber,
+        take: limitNumber,
         where: {
           OR: [
             {
-              generalInformation_en: {
+              firstname: {
                 startsWith: search,
                 mode: "insensitive"
               }
             },
             {
-              generalInformation_ru: {
+              lastname: {
                 startsWith: search,
                 mode: "insensitive"
               }
             },
             {
-              generalInformation_uz: {
+              phoneNumber: {
                 startsWith: search,
                 mode: "insensitive"
               }
             }
           ]
-        },
-        skip: (pageNumber - 1) * limitNumber,
-        take: limitNumber
+        }
       })
-      return findAll
+      return masters
     } catch (error) {
       throw new InternalServerErrorException(error)
     }
@@ -55,18 +56,18 @@ export class AboutUsService {
 
   async findOne(id: string) {
     try {
-      let findOne = await this.prisma.about_Us.findUnique({ where: { id } })
-      if (!findOne) return new NotFoundException("Not found")
-      return findOne
+      let master = await this.prisma.master.findUnique({ where: { id } })
+      if (!master) return new NotFoundException("Not found")
+      return master
     } catch (error) {
       throw new InternalServerErrorException(error)
     }
   }
 
-  async update(id: string, updateAboutUsDto: UpdateAboutUsDto) {
+  async update(id: string, updateMasterDto: UpdateMasterDto) {
     try {
-      let updated = await this.prisma.about_Us.update({
-        data: updateAboutUsDto,
+      let updated = await this.prisma.master.update({
+        data: updateMasterDto,
         where: { id }
       })
       return updated
@@ -77,7 +78,7 @@ export class AboutUsService {
 
   async remove(id: string) {
     try {
-      let deleted = await this.prisma.about_Us.delete({ where: { id } })
+      let deleted = await this.prisma.master.delete({ where: { id } })
       return deleted
     } catch (error) {
       throw new InternalServerErrorException(error)
