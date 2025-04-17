@@ -1,26 +1,37 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ORDER_STATUS } from '@prisma/client';
+import { Request } from 'express';
 
 @Injectable()
 export class OrderService {
   constructor(private readonly prisma: PrismaService) { }
 
-  async create(createOrderDto: CreateOrderDto) {
+  async create(createOrderDto: CreateOrderDto, req: Request) {
     try {
-      let order = await this.prisma.order.create({ data: createOrderDto })
-      await this.prisma.order.update({
-        data: { 
-          status: ORDER_STATUS.PENDING,
-          // totalPrice: 
-         },
-        where: { id: order.id }
+      let user = req['user']
+      console.log(user);
+
+      let { orderItems, ...rest } = createOrderDto
+      rest.date = new Date(rest.date)
+
+      let order = await this.prisma.order.create({
+        data: {
+          ...rest,
+          user: {
+            connect: { id: user.id }
+          },
+          OrderProduct: {
+            create: orderItems
+          }
+        },
+        include: { OrderProduct: true }
       })
-      return order
+      return { data: order }
     } catch (error) {
-      throw new InternalServerErrorException(error)
+      throw new BadRequestException(error.message)
     }
   }
 

@@ -1,26 +1,92 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrderMasterDto } from './dto/create-order-master.dto';
 import { UpdateOrderMasterDto } from './dto/update-order-master.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { ORDER_STATUS } from '@prisma/client';
 
 @Injectable()
 export class OrderMasterService {
-  create(createOrderMasterDto: CreateOrderMasterDto) {
-    return 'This action adds a new orderMaster';
+  constructor(private readonly prisma: PrismaService) { }
+
+  async create(createOrderMasterDto: CreateOrderMasterDto) {
+    try {
+      let { orderId, masterIds } = createOrderMasterDto
+      let orderMaster = await Promise.all(
+        masterIds.map(masterId =>
+          this.prisma.orderMaster.create({
+            data: {
+              orderId,
+              masterId
+            },
+            include: {
+              master: true,
+            }
+          })
+        )
+      )
+
+      await this.prisma.order.update({
+        data: { status: ORDER_STATUS.ACTIVE },
+        where: { id: orderId }
+      })
+
+      await Promise.all(
+        masterIds.map(masterId =>
+          this.prisma.master.update({
+            data: { isActive: true },
+            where: { id: masterId }
+          })
+        )
+      );
+      return orderMaster
+    } catch (error) {
+      throw new BadRequestException(error)
+    }
   }
 
-  findAll() {
-    return `This action returns all orderMaster`;
+  async findAll(page = 1, limit = 10) {
+    try {
+      const pageNumber = Number(page)
+      const limitNumber = Number(limit)
+
+      let orderMasters = await this.prisma.orderMaster.findMany({
+        skip: (pageNumber - 1) * limitNumber,
+        take: limitNumber
+      })
+      return orderMasters
+    } catch (error) {
+      throw new BadRequestException(error)
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} orderMaster`;
+  async findOne(id: string) {
+    try {
+      let orderMaster = await this.prisma.orderMaster.findUnique({ where: { id } })
+      if (!orderMaster) return new NotFoundException("Not found")
+      return orderMaster
+    } catch (error) {
+      throw new BadRequestException(error)
+    }
   }
 
-  update(id: number, updateOrderMasterDto: UpdateOrderMasterDto) {
-    return `This action updates a #${id} orderMaster`;
+  async update(id: string, updateOrderMasterDto: UpdateOrderMasterDto) {
+    try {
+      let updated = await this.prisma.orderMaster.update({
+        data: updateOrderMasterDto,
+        where: { id }
+      })
+      return updated
+    } catch (error) {
+      throw new BadRequestException(error)
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} orderMaster`;
+  async remove(id: string) {
+    try {
+      let deleted = await this.prisma.orderMaster.delete({ where: { id } })
+      return deleted
+    } catch (error) {
+      throw new BadRequestException(error)
+    }
   }
 }

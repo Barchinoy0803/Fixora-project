@@ -23,11 +23,10 @@ import { ToolModule } from './tool/tool.module';
 import { ProfessionToolModule } from './profession-tool/profession-tool.module';
 import { OrderModule } from './order/order.module';
 import { OrderMasterModule } from './order-master/order-master.module';
-import { OrderProductModule } from './order-product/order-product.module';
 import { BasketModule } from './basket/basket.module';
 
 @Module({
-  imports: [UserModule, UserAuthModule, EskizModule, PrismaModule, RegionModule, LevelModule, BrandModule, CapasityModule, SizeModule, FaqModule, ContactUsModule, AboutUsModule, PartnersModule, ShowcaseModule, ProfessionModule, MasterModule, MasterProfessionModule, ProfessionLevelModule, ToolModule, ProfessionToolModule, OrderModule, OrderMasterModule, OrderProductModule, BasketModule],
+  imports: [UserModule, UserAuthModule, EskizModule, PrismaModule, RegionModule, LevelModule, BrandModule, CapasityModule, SizeModule, FaqModule, ContactUsModule, AboutUsModule, PartnersModule, ShowcaseModule, ProfessionModule, MasterModule, MasterProfessionModule, ProfessionLevelModule, ToolModule, ProfessionToolModule, OrderModule, OrderMasterModule, BasketModule],
   controllers: [AppController],
   providers: [AppService],
 })

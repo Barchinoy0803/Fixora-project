@@ -1,11 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { RegionService } from './region.service';
 import { CreateRegionDto } from './dto/create-region.dto';
 import { UpdateRegionDto } from './dto/update-region.dto';
 
 @Controller('region')
 export class RegionController {
-  constructor(private readonly regionService: RegionService) {}
+  constructor(private readonly regionService: RegionService) { }
 
   @Post()
   create(@Body() createRegionDto: CreateRegionDto) {
@@ -13,8 +13,11 @@ export class RegionController {
   }
 
   @Get()
-  findAll() {
-    return this.regionService.findAll();
+  findAll(@Query() query: { page?: number, limit?: number, search?: string }) {
+    const page = Number(query.page) || 1
+    const limit = Number(query.limit) || 10
+    const search = query.search || ''
+    return this.regionService.findAll(page, limit, search);
   }
 
   @Get(':id')
