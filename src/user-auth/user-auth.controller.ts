@@ -36,6 +36,7 @@ export class UserAuthController {
     return this.userAuthService.register(createUserAuthDto);
   }
 
+  
   @Post('login')
   @ApiOperation({ summary: 'Login user' })
   @ApiBody({ type: LoginDto })
