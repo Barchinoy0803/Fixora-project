@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateToolDto } from './dto/create-tool.dto';
 import { UpdateToolDto } from './dto/update-tool.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -17,25 +17,117 @@ export class ToolService {
     }
   }
 
-  async findAll(page = 1, limit = 10, search = '') {
-    try {
-      const pageNumber = Number(page)
-      const limitNumber = Number(limit)
+  // async findAll(page = 1, limit = 10, search = '') {
+  //   try {
+  //     const pageNumber = Number(page)
+  //     const limitNumber = Number(limit)
 
-      let tools = await this.prisma.tool.findMany({
-        where: {
+  //     let tools = await this.prisma.tool.findMany({
+  //       where: {
+  //         OR: [
+  //           { name_en: { startsWith: search, mode: "insensitive" } },
+  //           { name_ru: { startsWith: search, mode: "insensitive" } },
+  //           { name_ru: { startsWith: search, mode: "insensitive" } },
+  //         ]
+  //       },
+  //       skip: (pageNumber - 1) * limitNumber,
+  //       take: limitNumber,
+  //       include: {
+  //         // Basket: true,
+  //         brand: true,
+  //         capasity: true,
+  //         size: true,
+  //         ProfessionTool: true
+  //       }
+  //     })
+  //     return tools
+  //   } catch (error) {
+  //     throw new InternalServerErrorException(error)
+  //   }
+  // }
+
+  async findAll(
+    page = 1,
+    limit = 10,
+    search = '',
+    brandName?: string,
+    capasityName?: string,
+    sizeName?: string,
+    priceFrom?: number,
+    priceTo?: number
+  ) {
+    try {
+      const pageNumber = Number(page);
+      const limitNumber = Number(limit);
+
+      const whereConditions: any = {
+        AND: [],
+      };
+
+      if (search) {
+        whereConditions.AND.push({
           OR: [
-            { name_en: { startsWith: search } },
-            { name_ru: { startsWith: search } },
-            { name_ru: { startsWith: search } },
+            { name_en: { contains: search, mode: 'insensitive' } },
+            { name_ru: { contains: search, mode: 'insensitive' } },
+            { name_uz: { contains: search, mode: 'insensitive' } },
+          ],
+        });
+      }
+
+      if (brandName) {
+        whereConditions.AND.push({
+          OR: [
+            { brand: { name_uz: { contains: brandName, mode: "insensitive" } } },
+            { brand: { name_ru: { contains: brandName, mode: "insensitive" } } },
+            { brand: { name_en: { contains: brandName, mode: "insensitive" } } }
           ]
-        },
+        });
+      }
+
+      if (capasityName) {
+        whereConditions.AND.push({
+          OR: [
+            { capasity: { name_uz: { contains: capasityName, mode: "insensitive" } } },
+            { capasity: { name_ru: { contains: capasityName, mode: "insensitive" } } },
+            { capasity: { name_en: { contains: capasityName, mode: "insensitive" } } }
+          ]
+        });
+      }
+
+      if (sizeName) {
+        whereConditions.AND.push({
+          OR: [
+            { size: { name_uz: { contains: sizeName, mode: "insensitive" } } },
+            { size: { name_ru: { contains: sizeName, mode: "insensitive" } } },
+            { size: { name_en: { contains: sizeName, mode: "insensitive" } } }
+          ]
+        });
+      }
+
+      if (priceFrom || priceTo) {
+        const priceFilter: any = {};
+        if (priceFrom) priceFilter.gte = Number(priceFrom);
+        if (priceTo) priceFilter.lte = Number(priceTo);
+
+        whereConditions.AND.push({ price: priceFilter });
+      }
+ 
+      const tools = await this.prisma.tool.findMany({
+        where: whereConditions,
         skip: (pageNumber - 1) * limitNumber,
-        take: limitNumber
-      })
-      return tools
+        take: limitNumber,
+        include: {
+          brand: true,
+          capasity: true,
+          size: true,
+          ProfessionTool: true,
+        },
+      });
+      return tools;
     } catch (error) {
-      throw new InternalServerErrorException(error)
+      console.log(error);
+
+      throw new BadRequestException(error);
     }
   }
 

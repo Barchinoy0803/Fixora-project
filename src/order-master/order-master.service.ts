@@ -50,6 +50,10 @@ export class OrderMasterService {
       const limitNumber = Number(limit)
 
       let orderMasters = await this.prisma.orderMaster.findMany({
+        include: {
+          master: true,
+          order: true
+        },
         skip: (pageNumber - 1) * limitNumber,
         take: limitNumber
       })
@@ -61,7 +65,13 @@ export class OrderMasterService {
 
   async findOne(id: string) {
     try {
-      let orderMaster = await this.prisma.orderMaster.findUnique({ where: { id } })
+      let orderMaster = await this.prisma.orderMaster.findUnique({
+        where: { id },
+        include: {
+          master: true,
+          order: true
+        },
+      })
       if (!orderMaster) return new NotFoundException("Not found")
       return orderMaster
     } catch (error) {

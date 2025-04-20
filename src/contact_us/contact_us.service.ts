@@ -20,16 +20,13 @@ export class ContactUsService {
     try {
       const pageNumber = Number(page)
       const limitNumber = Number(limit)
+
       let findAll = await this.prisma.contact_Us.findMany({
         where: {
-          firstname: {
-            startsWith: search,
-            mode: "insensitive"
-          },
-          lastname: {
-            startsWith: search,
-            mode: "insensitive"
-          }
+          OR: [
+            { firstname: { startsWith: search, mode: "insensitive" } },
+            { lastname: { startsWith: search, mode: "insensitive" } }
+          ]
         },
         skip: (pageNumber - 1) * limitNumber,
         take: limitNumber

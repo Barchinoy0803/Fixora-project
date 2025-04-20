@@ -1,31 +1,39 @@
-import { IsNotEmpty, IsNumber, IsString } from "class-validator"
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateMasterProfessionDto {
-    @IsString()
-    @IsNotEmpty()
-    professionId: string
+  @ApiProperty({ example: '12345', description: 'Profession ID' })
+  @IsString()
+  @IsNotEmpty()
+  professionId: string;
 
-    @IsNumber()
-    @IsNotEmpty()
-    minWorkingHours: number
+  @ApiProperty({ example: 40, description: 'Minimum working hours per day' })
+  @IsNumber()
+  @IsNotEmpty()
+  minWorkingHours: number;
 
-    @IsString()
-    @IsNotEmpty()
-    levelId: string
+  @ApiProperty({ example: '67890', description: 'Level ID' })
+  @IsString()
+  @IsNotEmpty()
+  levelId: string;
 
-    @IsNumber()
-    @IsNotEmpty()
-    priceHourly: number
+  @ApiProperty({ example: 20, description: 'Hourly price for the master' })
+  @IsNumber()
+  @IsNotEmpty()
+  priceHourly: number;
 
-    @IsNumber()
-    @IsNotEmpty()
-    priceDaily: number
+  @ApiProperty({ example: 160, description: 'Daily price for the master' })
+  @IsNumber()
+  @IsNotEmpty()
+  priceDaily: number;
 
-    @IsNumber()
-    @IsNotEmpty()
-    experience: number
+  @ApiProperty({ example: 5, description: 'Experience in years' })
+  @IsNumber()
+  @IsNotEmpty()
+  experience: number;
 
-    @IsString()
-    @IsNotEmpty()
-    masterId: string
+  @ApiProperty({ example: '54321', description: 'Master ID' })
+  @IsString()
+  @IsNotEmpty()
+  masterId: string;
 }

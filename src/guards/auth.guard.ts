@@ -10,6 +10,7 @@ export class AuthGuard implements CanActivate {
     
     let request: Request = context.switchToHttp().getRequest()
     let token = request.headers.authorization?.split(' ')[1]
+    
     if (!token) throw new UnauthorizedException("not found token")
     try {
       let data = this.jwtService.verify(token, { secret: process.env.ACCESS_SECRET })

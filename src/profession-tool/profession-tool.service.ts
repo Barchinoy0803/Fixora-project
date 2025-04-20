@@ -22,7 +22,10 @@ export class ProfessionToolService {
       const limitNumber = Number(limit)
 
       let professionTools = await this.prisma.professionTool.findMany({
-        include: { profession: true, tool: true },
+        include: { 
+          profession: true, 
+          tool: true 
+        },
         skip: (pageNumber - 1) * limitNumber,
         take: limitNumber,
       })
@@ -34,7 +37,13 @@ export class ProfessionToolService {
 
   async findOne(id: string) {
     try {
-      let professionTool = await this.prisma.professionTool.findUnique({ where: { id } })
+      let professionTool = await this.prisma.professionTool.findUnique({ 
+        where: { id },
+        include: { 
+          profession: true, 
+          tool: true 
+        }
+       })
       if (!professionTool) return new NotFoundException("Not found")
       return professionTool
     } catch (error) {

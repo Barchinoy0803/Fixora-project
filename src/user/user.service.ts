@@ -19,7 +19,7 @@ export class UserService {
           }
         },
         include: {
-
+          
         },
         skip: (pageNumber - 1) * limitNumber,
         take: limitNumber

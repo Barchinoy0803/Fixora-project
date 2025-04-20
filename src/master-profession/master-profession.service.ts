@@ -25,6 +25,11 @@ export class MasterProfessionService {
       let masterProfessions = await this.prisma.masterProfession.findMany({
         skip: (pageNumber - 1) * limitNumber,
         take: limitNumber,
+        include: {
+          level: true,
+          master: true,
+          profession: true
+        }
       })
       return masterProfessions
     } catch (error) {
@@ -34,7 +39,14 @@ export class MasterProfessionService {
 
   async findOne(id: string) {
     try {
-      let masterProfession = await this.prisma.masterProfession.findUnique({ where: { id } })
+      let masterProfession = await this.prisma.masterProfession.findUnique({
+        where: { id },
+        include: {
+          level: true,
+          master: true,
+          profession: true
+        }
+      })
       if (!masterProfession) return new NotFoundException("not found")
       return masterProfession
     } catch (error) {

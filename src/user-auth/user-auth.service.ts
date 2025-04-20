@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { RegisterDto } from './dto/register-user.dto';
 import { UpdateUserAuthDto } from './dto/update-user-auth.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -8,6 +8,7 @@ import { totp } from 'otplib';
 import { USER_STATUS } from 'generated/prisma';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login-user-dto';
+import { Request } from 'express';
 
 @Injectable()
 export class UserAuthService {
@@ -41,7 +42,7 @@ export class UserAuthService {
     }
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto, req: Request) {
     try {
       let { phone, password } = loginDto
 
@@ -55,8 +56,21 @@ export class UserAuthService {
 
       if (!matchPassword) throw new BadRequestException("Wrong credentials!");
 
-      const access_token = await this.generateAccessToken({ id: user.id, role: user.role });
-      const refresh_token = await this.generateRefreshToken({ id: user.id, role: user.role });
+      const ip: string = req.ip || 'unknown';
+
+      let session = await this.prisma.session.findFirst({
+        where: {
+          ip, userId: user.id
+        }
+      })
+
+      if (!session) {
+        await this.prisma.session.create({
+          data: { ip, userId: user.id }
+        })
+      }
+      const access_token = await this.generateAccessToken({ id: user.id, role: user.role! });
+      const refresh_token = await this.generateRefreshToken({ id: user.id, role: user.role! });
 
       return {
         access_token,
@@ -65,6 +79,31 @@ export class UserAuthService {
     } catch (error) {
       throw new InternalServerErrorException(error, "errror")
     }
+  }
+
+  async findAllSessions(req: Request) {
+    let id = req['user'].id
+    let sessions = await this.prisma.session.findMany({
+      where: { userId: id }
+    })
+    return sessions
+  }
+
+  async deleteSession(req: Request, id: string) {
+    let deletedSession = await this.prisma.session.delete({ where: { id } })
+    return deletedSession
+  }
+
+  async me(req: Request) {
+    let id = req['user'].id
+    let session = await this.prisma.session.findFirst({
+      where: { ip: req.ip, userId: id }
+    })
+    if (!session) {
+      throw new UnauthorizedException()
+    }
+    let user = await this.prisma.user.findFirst({ where: { id } })
+    return user
   }
 
   async activate(phone: string, otp: string) {
@@ -90,7 +129,7 @@ export class UserAuthService {
   async generateAccessToken(payload: { id: string, role: string }) {
     const token = this.jwtService.sign(payload, {
       secret: process.env.ACCESS_SECRET,
-      expiresIn: '15m'
+      expiresIn: '1d'
     });
     return token;
   }

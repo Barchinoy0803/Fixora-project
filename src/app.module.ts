@@ -24,10 +24,29 @@ import { ProfessionToolModule } from './profession-tool/profession-tool.module';
 import { OrderModule } from './order/order.module';
 import { OrderMasterModule } from './order-master/order-master.module';
 import { BasketModule } from './basket/basket.module';
+import { CommentModule } from './comment/comment.module';
+import { TelegramService } from './telegram/telegram.service';
+import { TelegramModule } from './telegram/telegram.module';
+import { CloudinaryModule } from 'nestjs-cloudinary';
+import { FileUploadController } from './file-upload/file-upload.controller';
+import { FileUploadModule } from './file-upload/file-upload.module';
 
 @Module({
-  imports: [UserModule, UserAuthModule, EskizModule, PrismaModule, RegionModule, LevelModule, BrandModule, CapasityModule, SizeModule, FaqModule, ContactUsModule, AboutUsModule, PartnersModule, ShowcaseModule, ProfessionModule, MasterModule, MasterProfessionModule, ProfessionLevelModule, ToolModule, ProfessionToolModule, OrderModule, OrderMasterModule, BasketModule],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [UserModule, UserAuthModule, EskizModule, PrismaModule, RegionModule, LevelModule,
+    BrandModule, CapasityModule, SizeModule, FaqModule, ContactUsModule, AboutUsModule,
+    PartnersModule, ShowcaseModule, ProfessionModule, MasterModule,
+    MasterProfessionModule, ProfessionLevelModule, ToolModule, ProfessionToolModule,
+    OrderModule, OrderMasterModule, BasketModule, CommentModule, TelegramModule,
+    CloudinaryModule.forRootAsync({
+      useFactory: () => ({
+        cloud_name: process.env.CLOUD_NAME,
+        api_key: process.env.API_KEY,
+        api_secret: process.env.API_SECRET,
+      }),
+    }),
+    FileUploadModule,
+],
+  controllers: [AppController, FileUploadController],
+  providers: [AppService, TelegramService],
 })
-export class AppModule {}
+export class AppModule { }

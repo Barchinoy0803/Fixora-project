@@ -21,17 +21,20 @@ export class CapasityService {
       const pageNumber = Number(page)
       const limitNumber = Number(limit)
       console.log(search);
-      
+
       let capasities = await this.prisma.capasity.findMany({
         where: {
-         OR: [
-          { name_en: { startsWith: search, mode: "insensitive" } },
-          { name_ru: { startsWith: search, mode: "insensitive" } },
-          { name_uz: { startsWith: search, mode: "insensitive" } },
-         ]
+          OR: [
+            { name_en: { startsWith: search, mode: "insensitive" } },
+            { name_ru: { startsWith: search, mode: "insensitive" } },
+            { name_uz: { startsWith: search, mode: "insensitive" } },
+          ]
         },
         skip: (pageNumber - 1) * limitNumber,
-        take: limitNumber
+        take: limitNumber,
+        include: {
+          Tool: true
+        }
       })
       return capasities
     } catch (error) {
@@ -41,7 +44,12 @@ export class CapasityService {
 
   async findOne(id: string) {
     try {
-      let capasity = await this.prisma.capasity.findUnique({ where: { id } })
+      let capasity = await this.prisma.capasity.findUnique({
+        where: { id },
+        include: {
+          Tool: true
+        }
+      })
       if (!capasity) return new NotFoundException("Not found")
       return capasity
     } catch (error) {

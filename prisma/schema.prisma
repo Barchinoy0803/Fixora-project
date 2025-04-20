@@ -20,24 +20,24 @@ model User {
   fullname String
   password String
   phone    String      @unique
-  IIN      String      @default("")
-  MFO      String      @default("")
-  RS       String      @default("")
-  BANK     String      @default("")
-  OKED     String      @default("")
-  address  String      @default("")
-  role     ROLE        @default(USER_FIZ)
-  status   USER_STATUS @default(INACTIVE)
+  IIN      String?
+  MFO      String?
+  RS       String?
+  BANK     String?
+  OKED     String?
+  address  String?
+  role     ROLE?        @default(USER_FIZ)
+  status   USER_STATUS? @default(INACTIVE)
   regionId String
   region   Region      @relation(fields: [regionId], references: [id])
   Session  Session[]
   Order    Order[]
   Basket   Basket[]
+  Comment  Comment[]
 }
 
 model Session {
   id          String @id @default(uuid())
-  device_name String
   ip          String
   userId      String
   user        User   @relation(fields: [userId], references: [id])
@@ -78,8 +78,10 @@ model Master {
   image            String
   pasportImage     String
   about            String
+  avarageStar      Decimal            @default(0)
   MasterProfession MasterProfession[]
   orderMaster      OrderMaster[]
+  Comment          Comment[]
 }
 
 model MasterProfession {
@@ -94,6 +96,15 @@ model MasterProfession {
   experience      Int
   masterId        String
   master          Master     @relation(fields: [masterId], references: [id])
+}
+
+model Comment {
+  id       String  @id @default(uuid())
+  star     Decimal
+  masterId String
+  master   Master  @relation(fields: [masterId], references: [id])
+  userId   String?
+  user     User?    @relation(fields: [userId], references: [id])
 }
 
 model ProfessionLevel {
@@ -150,7 +161,7 @@ model Order {
   totalPrice      Decimal
   paymentType     PAYMENT_TYPE
   withDelivery    Boolean
-  status          ORDER_STATUS   @default(PENDING)
+  status          ORDER_STATUS?   @default(PENDING)
   deliveryComment String
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
@@ -159,11 +170,11 @@ model Order {
 }
 
 model OrderMaster {
-  id       String   @id @default(uuid())
+  id       String @id @default(uuid())
   orderId  String
-  order    Order    @relation(fields: [orderId], references: [id])
+  order    Order  @relation(fields: [orderId], references: [id])
   masterId String
-  master   Master   @relation(fields: [masterId], references: [id])
+  master   Master @relation(fields: [masterId], references: [id])
 }
 
 model OrderProduct {
@@ -184,8 +195,8 @@ model OrderProduct {
 
 model Basket {
   id           String     @id @default(uuid())
-  userId       String
-  user         User       @relation(fields: [userId], references: [id])
+  userId       String?
+  user         User?       @relation(fields: [userId], references: [id])
   professionId String
   profession   Profession @relation(fields: [professionId], references: [id])
   toolId       String
@@ -193,7 +204,6 @@ model Basket {
   count        Int
   timeUnit     TIME_UNIT
   workingTime  Int
-  totalPrice   Decimal
   levelId      String
   level        Level      @relation(fields: [levelId], references: [id])
 }
@@ -257,6 +267,7 @@ model Partners {
   name_ru String
   name_en String
   image   String
+  link    String
 }
 
 model ShowCase {

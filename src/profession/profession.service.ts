@@ -16,20 +16,35 @@ export class ProfessionService {
     }
   }
 
-  async findAll(page = 1, limit = 10, search = '') {
+  async findAll(page = 1, limit = 10, search = '', isActive = '') {
     try {
       const pageNumber = Number(page)
       const limitNumber = Number(limit)
 
+      let whereConditions: any = {
+        OR: [
+          { name_en: { startsWith: search, mode: 'insensitive' } },
+          { name_ru: { startsWith: search, mode: 'insensitive' } },
+          { name_uz: { startsWith: search, mode: 'insensitive' } },
+        ]
+      }
+
+      if (isActive != '') {
+        let isAct = isActive == 'true' ? true : false
+        whereConditions = {
+          ...whereConditions,
+          isActive: isAct
+        }
+      }
+
       let professions = await this.prisma.profession.findMany({
-        // include: {},
-        where: {
-          OR: [
-            { name_en: { startsWith: search } },
-            { name_ru: { startsWith: search } },
-            { name_ru: { startsWith: search } },
-          ]
+        include: {
+          MasterProfession: true,
+          ProfessionLevel: true,
+          ProfessionTool: true,
+          // Basket: true
         },
+        where: whereConditions,
         skip: (pageNumber - 1) * limitNumber,
         take: limitNumber
       })
@@ -41,7 +56,15 @@ export class ProfessionService {
 
   async findOne(id: string) {
     try {
-      let profession = await this.prisma.profession.findUnique({ where: { id } })
+      let profession = await this.prisma.profession.findUnique({
+        where: { id },
+        include: {
+          MasterProfession: true,
+          ProfessionLevel: true,
+          ProfessionTool: true,
+          // Basket: true
+        }
+      })
       if (!profession) return new NotFoundException("Not found")
       return profession
     } catch (error) {

@@ -22,6 +22,10 @@ export class ProfessionLevelService {
       const limitNumber = Number(limit)
 
       let professionLevels = await this.prisma.professionLevel.findMany({
+        include: {
+          level: true,
+          profession: true
+        },
         skip: (pageNumber - 1) * limitNumber,
         take: limitNumber,
       })
@@ -33,7 +37,13 @@ export class ProfessionLevelService {
 
   async findOne(id: string) {
     try {
-      let professionLevel = await this.prisma.professionLevel.findUnique({ where: { id } })
+      let professionLevel = await this.prisma.professionLevel.findUnique({
+        include: {
+          level: true,
+          profession: true
+        },
+        where: { id }
+      })
       if (!professionLevel) return new NotFoundException("Not found")
       return professionLevel
     } catch (error) {

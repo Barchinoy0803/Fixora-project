@@ -30,7 +30,10 @@ export class BrandService {
           ]
         },
         skip: (pageNumber - 1) * limitNumber,
-        take: limitNumber
+        take: limitNumber,
+        include: {
+          Tool: true
+        }
       })
       return brands
     } catch (error) {
@@ -40,7 +43,12 @@ export class BrandService {
 
   async findOne(id: string) {
     try {
-      let brand = await this.prisma.brand.findUnique({ where: { id } })
+      let brand = await this.prisma.brand.findUnique({
+        where: { id },
+        include: {
+          Tool: true
+        }
+      })
       if (!brand) return new NotFoundException("Not founed")
       return brand
     } catch (error) {

@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateFaqDto } from './dto/create-faq.dto';
 import { UpdateFaqDto } from './dto/update-faq.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -22,18 +22,26 @@ export class FaqService {
       const limitNumber = Number(limit)
       let findAll = await this.prisma.fAQ.findMany({
         where: {
-          question_en: {
-            startsWith: search,
-            mode: "insensitive"
-          },
-          question_ru: {
-            startsWith: search,
-            mode: "insensitive"
-          },
-          question_uz: {
-            startsWith: search,
-            mode: "insensitive"
-          }
+          OR: [
+            {
+              question_en: {
+                startsWith: search,
+                mode: "insensitive"
+              }
+            },
+            {
+              question_ru: {
+                startsWith: search,
+                mode: "insensitive"
+              }
+            },
+            {
+              question_uz: {
+                startsWith: search,
+                mode: "insensitive"
+              }
+            }
+          ]
         },
         skip: (pageNumber - 1) * limitNumber,
         take: limitNumber
@@ -56,13 +64,13 @@ export class FaqService {
 
   async update(id: string, updateFaqDto: UpdateFaqDto) {
     try {
-      let updated = await this.prisma.capasity.update({
+      let updated = await this.prisma.fAQ.update({
         data: updateFaqDto,
         where: { id }
       })
       return updated
     } catch (error) {
-      throw new InternalServerErrorException(error)
+      throw new BadRequestException(error)
     }
   }
 

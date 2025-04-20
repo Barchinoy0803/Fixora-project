@@ -22,18 +22,26 @@ export class ShowcaseService {
       const limitNumber = Number(limit)
       let findAll = await this.prisma.showCase.findMany({
         where: {
-          name_en: {
-            startsWith: search,
-            mode: "insensitive"
-          },
-          name_ru: {
-            startsWith: search,
-            mode: "insensitive"
-          },
-          name_uz: {
-            startsWith: search,
-            mode: "insensitive"
-          }
+          OR: [
+            {
+              name_en: {
+                startsWith: search,
+                mode: "insensitive"
+              }
+            },
+            {
+              name_ru: {
+                startsWith: search,
+                mode: "insensitive"
+              }
+            },
+            {
+              name_uz: {
+                startsWith: search,
+                mode: "insensitive"
+              }
+            }
+          ]
         },
         skip: (pageNumber - 1) * limitNumber,
         take: limitNumber

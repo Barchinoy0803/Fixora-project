@@ -23,21 +23,32 @@ export class SizeService {
 
       let sizes = await this.prisma.size.findMany({
         where: {
-          name_en: {
-            startsWith: search,
-            mode: "insensitive"
-          },
-          name_ru: {
-            startsWith: search,
-            mode: "insensitive"
-          },
-          name_uz: {
-            startsWith: search,
-            mode: "insensitive"
-          }
+          OR: [
+            {
+              name_en: {
+                startsWith: search,
+                mode: "insensitive"
+              }
+            },
+            {
+              name_ru: {
+                startsWith: search,
+                mode: "insensitive"
+              }
+            },
+            {
+              name_uz: {
+                startsWith: search,
+                mode: "insensitive"
+              }
+            }
+          ]
         },
         skip: (pageNumber - 1) * limitNumber,
-        take: limitNumber
+        take: limitNumber,
+        include: {
+          Tool: true
+        }
       })
       return sizes
     } catch (error) {
@@ -47,7 +58,12 @@ export class SizeService {
 
   async findOne(id: string) {
     try {
-      let size = await this.prisma.size.findUnique({ where: { id } })
+      let size = await this.prisma.size.findUnique({
+        where: { id },
+        include: {
+          Tool: true
+        }
+      })
       if (!size) return new NotFoundException("Not found")
       return size
     } catch (error) {

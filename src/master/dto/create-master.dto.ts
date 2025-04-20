@@ -1,35 +1,39 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator"
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateMasterDto {
-    @IsString()
-    @IsNotEmpty()
-    firstname: string
+  @ApiProperty({ example: 'Barchinoy', description: 'Master firstname' })
+  @IsString()
+  @IsNotEmpty()
+  firstname: string;
 
-    @IsString()
-    @IsNotEmpty()
-    lastname: string
+  @ApiProperty({ example: 'Turgunova', description: 'Master lastname' })
+  @IsString()
+  @IsNotEmpty()
+  lastname: string;
 
-    @IsString()
-    @IsNotEmpty()
-    phoneNumber: string
+  @ApiProperty({ example: '+998901234567', description: 'Master phone number' })
+  @IsString()
+  @IsNotEmpty()
+  phoneNumber: string;
 
-    @IsOptional()
-    @IsBoolean()
-    isActive: boolean
+  @ApiProperty({ example: 2024, description: 'Year of starting profession' })
+  @IsNumber()
+  @IsNotEmpty()
+  year: number;
 
-    @IsNumber()
-    @IsNotEmpty()
-    year: number
+  @ApiProperty({ example: 'https://example.com/image.jpg', description: 'Profile image URL' })
+  @IsString()
+  @IsNotEmpty()
+  image: string;
 
-    @IsString()
-    @IsNotEmpty()
-    image: string
+  @ApiProperty({ example: 'https://example.com/passport.jpg', description: 'Passport image URL' })
+  @IsString()
+  @IsNotEmpty()
+  pasportImage: string;
 
-    @IsString()
-    @IsNotEmpty()
-    pasportImage: string
-
-    @IsString()
-    @IsNotEmpty()
-    about: string
+  @ApiProperty({ example: 'Certified master with 5 years of experience', description: 'About master' })
+  @IsString()
+  @IsNotEmpty()
+  about: string;
 }

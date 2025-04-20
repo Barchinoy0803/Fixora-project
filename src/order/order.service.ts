@@ -4,15 +4,18 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ORDER_STATUS } from '@prisma/client';
 import { Request } from 'express';
+import { TelegramService } from 'src/telegram/telegram.service';
 
 @Injectable()
 export class OrderService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly telegramService: TelegramService
+  ) { }
 
   async create(createOrderDto: CreateOrderDto, req: Request) {
     try {
       let user = req['user']
-      console.log(user);
 
       let { orderItems, ...rest } = createOrderDto
       rest.date = new Date(rest.date)
@@ -29,21 +32,34 @@ export class OrderService {
         },
         include: { OrderProduct: true }
       })
+
+      await this.telegramService.sendMessage(`Order created ✅\nUser: ${user.id}\nOrder: ${order.id}`)
       return { data: order }
     } catch (error) {
       throw new BadRequestException(error.message)
     }
   }
 
-  async findAll(page = 1, limit = 10) {
+  async findAll(page = 1, limit = 10, status?: ORDER_STATUS) {
     try {
       const pageNumber = Number(page)
       const limitNumber = Number(limit)
 
+      let whereConditions: any = {}
+
+      if (status !== undefined) {
+        whereConditions.status = status
+      }
+
       let orders = await this.prisma.order.findMany({
-        include: { orderMaster: true, user: true },
+        include: {
+          orderMaster: true,
+          user: true,
+          OrderProduct: true
+        },
         skip: (pageNumber - 1) * limitNumber,
-        take: limitNumber
+        take: limitNumber,
+        where: whereConditions
       })
       return orders
     } catch (error) {
@@ -53,7 +69,14 @@ export class OrderService {
 
   async findOne(id: string) {
     try {
-      let order = await this.prisma.order.findUnique({ where: { id } })
+      let order = await this.prisma.order.findUnique({
+        where: { id },
+        include: {
+          orderMaster: true,
+          user: true,
+          OrderProduct: true
+        }
+      })
       if (!order) return new NotFoundException("Not found")
       return order
     } catch (error) {

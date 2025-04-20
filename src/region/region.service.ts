@@ -41,7 +41,10 @@ export class RegionService {
 
   async findOne(id: string) {
     try {
-      let region = await this.prisma.region.findUnique({ where: { id } })
+      let region = await this.prisma.region.findUnique({
+        include: { User: true },
+        where: { id }
+      })
       if (!region) return new NotFoundException("Not found")
       return region
     } catch (error) {

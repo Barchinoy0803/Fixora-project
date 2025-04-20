@@ -28,6 +28,10 @@ export class LevelService {
             { name_uz: { startsWith: search, mode: "insensitive" } },
           ]
         },
+        include: {
+          MasterProfession: true,
+          ProfessionLevel: true
+        },
         skip: (pageNumber - 1) * limitNumber,
         take: limitNumber
       })
@@ -39,7 +43,13 @@ export class LevelService {
 
   async findOne(id: string) {
     try {
-      let level = await this.prisma.level.findUnique({ where: { id } })
+      let level = await this.prisma.level.findUnique({
+        include: {
+          MasterProfession: true,
+          ProfessionLevel: true
+        },
+        where: { id }
+      })
       if (!level) return new NotFoundException("Not found")
       return level
     } catch (error) {
